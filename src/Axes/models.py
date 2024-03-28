@@ -1,10 +1,14 @@
-
 from GloVe.weights import *
 import warnings
+import os
 
 warnings.filterwarnings("ignore")
 from Axes.projection_functions import *
 from Axes.axes_definition import *
+
+os.chdir("../")
+print(os.getcwd())
+
 
 # PART I **word2vec models**
 
@@ -14,7 +18,7 @@ models_s = []
 for i in range(14):
     models_s.append(
         txt_to_model_sentences(
-            "/Users/alexandrequeant/Desktop/Travail TSE/data/sentence_embeddings/sentence_embeddings_201"
+            "data/sentence_embeddings/sentence_embeddings_201"
             + str(i)
             + ".txt"
         )
@@ -26,8 +30,10 @@ models_w = []
 for i in range(14):
     models_w.append(
         txt_to_model_words(
-            "/Users/alexandrequeant/Desktop/Travail TSE/data/embeddings/embeddings_201"
+            "data/embeddings/embeddings_201"
             + str(i)
             + ".txt"
         )
     )
+
+os.chdir(r"src")

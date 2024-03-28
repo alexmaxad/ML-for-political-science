@@ -35,18 +35,16 @@ dfs[5] = dfs[5][dfs[5]["source"] != "TE"]
 
 
 def both_cosines(df, pos_1, neg_1, pos_2, neg_2, model_words, model_sentences):
+    axis_v1 = axis_vector(pos_1, neg_1, model_words)
     df["cos axe 1"] = df["text"].apply(
         cosine_with_axis,
-        pos_1=pos_1,
-        neg_1=neg_1,
-        model_words=model_words,
+        axis_v1,
         model_sentences=model_sentences,
     )
+    axis_v2 = axis_vector(pos_2, neg_2, model_words)
     df["cos axe 2"] = df["text"].apply(
         cosine_with_axis,
-        pos_1=pos_2,
-        neg_1=neg_2,
-        model_words=model_words,
+        axis_v2,
         model_sentences=model_sentences,
     )
     return df

@@ -1,20 +1,16 @@
 from __future__ import division
 from collections import Counter
-import operator
-import random
 import json
 import numpy as np
-from time import sleep
-from dask import dataframe as dd
-import ast
-from scipy import sparse
-from random import random
-from time import sleep
 from scipy.sparse import dok_matrix
-from multiprocessing import Pool
+
+import json
+import numpy as np
+import ast
 import os
-from functools import partial,reduce
-from operator import add
+import csv
+from Processing.text_cleaning import *
+
 
 def vocab_dic(fichier) :
     '''  Returns
@@ -62,3 +58,20 @@ def split(a, n):
     ''' Function to split a list in n evenly subpart'''
     k, m = divmod(len(a), n)
     return ([a[i*k+min(i, m):(i+1)*k+min(i+1, m)] for i in range(n)])
+
+def glove2dict(glove_filename):
+    ''' transforms a txt file of embeddings into a dictionary
+    Parameters:
+    -----------
+    glove_filename : embeddings txt file
+    '''
+    with open(glove_filename) as f:
+        reader = csv.reader(f, delimiter=' ', quoting=csv.QUOTE_NONE)
+        words = []
+        mats = []
+        for line in reader :
+            if len(clean(line[0], gram='unigram'))>0:
+                words.append(clean(line[0], gram='unigram')[0])
+                mats.append(np.array(list(map(float, line[1:]))))
+    embed = {words[i]: mats[i] for i in range(len(words))}
+    return embed

@@ -5,7 +5,6 @@ from nltk.stem.snowball import SnowballStemmer
 from nltk.stem import PorterStemmer
 import re
 from nltk.corpus import stopwords
-from nltk.corpus import stopwords
 stemmer = SnowballStemmer(language='english')
 english_stopwords = set(stopwords.words('english'))
 

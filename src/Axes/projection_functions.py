@@ -148,9 +148,9 @@ def txt_to_model_sentences(fichier: str):
     -----------
     fichier : the txt file of sentence embeddings
     """
-    glove_file_sentences = datapath(fichier)
+    #glove_file_sentences = datapath(fichier)
     word2vec_glove_file_sentences = get_tmpfile("format_word2vec.text")
-    glove2word2vec(glove_file_sentences, word2vec_glove_file_sentences)
+    glove2word2vec(fichier, word2vec_glove_file_sentences)
     with open(word2vec_glove_file_sentences, "r") as file:
         data = file.readlines()
         data[0] = str(len(data) - 1) + " 50\n"
@@ -166,9 +166,9 @@ def txt_to_model_words(fichier: str):
     -----------
     fichier : the txt file of word embeddings
     """
-    glove_file_sentences = datapath(fichier)
+    #glove_file_sentences = datapath(fichier)
     word2vec_glove_file_sentences = get_tmpfile("format_word2vec.text")
-    glove2word2vec(glove_file_sentences, word2vec_glove_file_sentences)
+    glove2word2vec(fichier, word2vec_glove_file_sentences)
     return KeyedVectors.load_word2vec_format(word2vec_glove_file_sentences)
 
 
@@ -414,8 +414,16 @@ def projection_3D(
 
     return (Wp, df)
 
+def axis_vector(pos_1, neg_1, model_words):
 
-def cosine_with_axis(sentence: str, pos_1, neg_1, model_words, model_sentences):
+    pos_a = filter_model(pos_1, model_words)
+    neg_a = filter_model(neg_1, model_words)
+
+    b1 = barycentre(pos_a, model_words) - barycentre(neg_a, model_words)
+
+    return b1
+
+def cosine_with_axis(sentence: str, axis_v, model_sentences):
     """computes the cosine of a sentence with the given axis
 
     Parameters:
@@ -427,10 +435,7 @@ def cosine_with_axis(sentence: str, pos_1, neg_1, model_words, model_sentences):
     model_sentences : the word2vec sentence model used to get corresponding sentence embeddings
     """
 
-    pos_a = filter_model(pos_1, model_words)
-    neg_a = filter_model(neg_1, model_words)
-
-    b1 = barycentre(pos_a, model_words) - barycentre(neg_a, model_words)
+    b1 = axis_v
 
     array_1 = model_sentences[sentence]
     array_2 = b1

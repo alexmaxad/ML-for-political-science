@@ -5,9 +5,7 @@ import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
-import os
 
-os.chdir(r"/Users/alexandrequeant/Desktop/Travail TSE")
 import plotly.express as px
 from sklearn.metrics import silhouette_score
 import pandas as pd

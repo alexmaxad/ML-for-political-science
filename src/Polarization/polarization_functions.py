@@ -61,6 +61,7 @@ def get_token_user_counts(party_counts):
 
 def mutual_information(dem_t, rep_t, dem_not_t, rep_not_t, dem_no, rep_no):
     no_users = dem_no + rep_no
+    print(no_users)
     all_t = dem_t + rep_t
     all_not_t = no_users - all_t + 4
     mi_dem_t = dem_t * np.log2(no_users * (dem_t / (all_t * dem_no)))

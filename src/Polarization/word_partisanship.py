@@ -4,6 +4,10 @@ from collections import defaultdict
 import math
 import json
 from Polarization.polarization_functions import *
+from GloVe.weights import *
+from Axes.projection_functions import *
+from Axes.axes_definition import *
+from Axes.models import *
 
 def get_counts(text, vocab):
     counts = {w: 0 for w in vocab}
@@ -51,7 +55,7 @@ def log_odds(counts1, counts2, prior, zscore = True):
 
 def get_log_odds_values(df_speeches, words2idx, party_1, party_2):
 
-    dem_tweets, rep_tweets = df_speeches[df_speeches['party'] == party_1], df_speeches[df_speeches['party'] == party_2]
+    dem_tweets, rep_tweets = df_speeches[df_speeches['party']==party_1], df_speeches[df_speeches['party']==party_2]
 
     # get counts
     counts1 = get_counts(rep_tweets['text'], words2idx)
@@ -91,8 +95,7 @@ def get_word_partisanship(df_speeches, year, party_1, party_2, bigram=False):
     rep_counts = get_user_token_counts(rep_tweets, words2idx)
     dem_nonzero = set(dem_counts.nonzero()[0])
     rep_nonzero = set(rep_counts.nonzero()[0])
-    dem_counts = dem_counts[np.array([(i in dem_nonzero) for i in range(dem_counts.shape[0])]),
-                 :]  # filter users who did not use words from vocab
+    dem_counts = dem_counts[np.array([(i in dem_nonzero) for i in range(dem_counts.shape[0])]), :]  # filter users who did not use words from vocab
     rep_counts = rep_counts[np.array([(i in rep_nonzero) for i in range(rep_counts.shape[0])]), :]
 
     # calculate posterior
@@ -122,3 +125,161 @@ def get_word_partisanship(df_speeches, year, party_1, party_2, bigram=False):
         features[6, words2idx[w]] = chi[words2idx[w]]
 
     return features, idx2words, words2idx
+
+def cosine_with_axis_word(word: str, b,  model_words) :   
+
+    array_1 = model_words[word]
+    array_2 = b
+
+    cosine = np.dot(array_1, array_2.T) / (norm(array_1) * norm(array_2))
+
+    return cosine
+
+def cosine_with_axis_bigram(bigram: str, b,  model_words) :   
+
+    word_1, word_2 = bigram.split(' ')
+
+    array_1 = (model_words[word_1] + model_words[word_2]) * 0.5
+    array_2 = b
+
+    cosine = np.dot(array_1, array_2.T) / (norm(array_1) * norm(array_2))
+
+    return cosine
+
+def get_quantiles(data, percentiles):
+    """
+    Get quantiles from a distribution.
+    
+    Parameters:
+        data (array-like): The data.
+        percentiles (array-like): The percentiles to compute (0-100).
+    
+    Returns:
+        quantiles (array): The values at the specified percentiles.
+    """
+    return np.percentile(data, percentiles)
+
+def filter_deltas(df, delta_low_percentile, delta_high_percentile):
+    delta_percentiles = [delta_low_percentile, delta_high_percentile]
+
+    quantiles_deltas = get_quantiles(df['deltas'], delta_percentiles)
+
+    df = df.loc[(df['deltas'] < quantiles_deltas[0]) | (df['deltas'] > quantiles_deltas[1])]
+
+    return df
+
+def get_quantiles(data, percentiles):
+    """
+    Compute quantiles for a given dataset and percentiles.
+    
+    :param data: Numerical data from which to calculate quantiles.
+    :param percentiles: A list of percentiles to calculate for the data.
+    :return: An array of quantiles corresponding to the specified percentiles.
+    """
+    return np.percentile(data, percentiles)
+
+def partizan_words(left_side, right_side, year, gram = 'bigram', focus_on_companies=None, axis=None,
+    percentiles_cos=[10, 90], percentiles_delta=[10, 90], force_i_lim=None, re_filter_cos=False, percentiles_refiltering_cos = [25, 75]):
+
+    sources = left_side+right_side
+
+    s = str(year)[-2:]
+
+    if s[0] == '1':
+        i = eval(s[1])
+    if s[0] == '2':
+        i = eval('1'+s[1])
+    
+    df_proj = pd.read_csv("data/current_dataframes/df_BT")
+
+    df_par = df_proj.loc[df_proj["source"].isin(sources) | df_proj["party"].isin(sources)]
+    
+    def change_year(old_year):
+        if int(old_year) == 20110:
+            return 2020
+        if int(old_year) == 20111:
+            return 2021
+        if int(old_year) == 20112:
+            return 2022
+        if int(old_year) == 20113:
+            return 2023
+        else :
+            return int(old_year)
+        
+    df_par['year'] = df_par['year'].apply(change_year)
+    df_par = df_par.loc[df_par['year'] == year]
+
+    df1 = df_par[df_par['source'] == 'par']
+    df2 = df_par[df_par['source'] != 'par']
+
+    # Define a function to translate newspaper source to party
+    def translate_party(newspaper):
+        """
+        Translates newspaper sources to their corresponding political party.
+        
+        :param newspaper: The source to be translated.
+        :return: The political party corresponding to the source.
+        """
+        if newspaper in left_side:
+            return "Lab"
+        if newspaper in right_side:
+            return "Con"
+    
+    # Apply the translation function to assign parties based on sources
+    df2['party'] = df2['source'].apply(translate_party)
+    df2['Speaker'] = range(len(df2))
+
+    # Combine the two DataFrames and reset index for continuity
+    df_par = pd.concat([df1, df2]).reset_index(drop=True)
+
+    if focus_on_companies:
+        df_par = df_par.loc[df_par["class"].isin(focus_on_companies)]
+
+    if axis is not None:
+        quantiles = get_quantiles(df_par[f'cos axe {axis}'], percentiles_cos)
+        df_par = df_par[(df_par[f'cos axe {axis}'] < quantiles[0]) | (df_par[f'cos axe {axis}'] > quantiles[1])]
+
+    def phrase_to_tokens(phrase):
+        word_list = phrase.strip("_").split("_")
+        return word_list
+    
+    df_par['text'] = df_par['text'].apply(phrase_to_tokens)
+
+    if gram == 'bigram' :
+        partisanship_matrix, idx2words, words2idx = get_word_partisanship(df_par, year, 'Lab', 'Con', bigram=True)
+        deltas = partisanship_matrix[3, :]
+        words = np.array(list(idx2words.values()), dtype=None)
+        df_sorted_partisanships = pd.DataFrame({'words' : words, 'deltas' : deltas}).sort_values(by='deltas', ascending=False)
+    
+
+        df = df_sorted_partisanships
+        m = models_w[i]
+        pos_a = filter_model(pos_1, m)
+        neg_a = filter_model(neg_1, m)
+
+        b = barycentre(pos_a, m) - barycentre(neg_a, m)
+        df['cos'] = df['words'].apply(cosine_with_axis_bigram, b=b, model_words=m)
+        df_sorted_partisanships = df
+        df = filter_deltas(df, percentiles_delta[0], percentiles_delta[1])
+
+    if gram == 'unigram' :
+        partisanship_matrix, idx2words, words2idx = get_word_partisanship(df_par, year, 'Lab', 'Con', bigram=False)
+        deltas = partisanship_matrix[3, :]
+        words = np.array(list(idx2words.values()), dtype=None)
+        df_sorted_partisanships = pd.DataFrame({'words' : words, 'deltas' : deltas}).sort_values(by='deltas', ascending=False)
+        
+        df = df_sorted_partisanships
+        m = models_w[i]
+        pos_a = filter_model(pos_1, m)
+        neg_a = filter_model(neg_1, m)
+
+        b = barycentre(pos_a, m) - barycentre(neg_a, m)
+        df['cos'] = df['words'].apply(cosine_with_axis_word, b=b, model_words=m)
+        df_sorted_partisanships = df
+        df = filter_deltas(df, percentiles_delta[0], percentiles_delta[1])
+
+    if re_filter_cos:
+        quantiles = get_quantiles(df['cos'], percentiles_refiltering_cos)
+        df = df[(df['cos'] < quantiles[0]) | (df['cos'] > quantiles[1])]
+
+    return df.sort_values(by='deltas', ascending=False)
