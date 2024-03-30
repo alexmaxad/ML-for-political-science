@@ -83,6 +83,46 @@ def plot_clusters_on_pc_kmeans(number_of_clusters, data):
     fig = px.scatter(df_pc, x=0, y=1, color=2)
     fig.show()
 
+def plot_clusters_on_pc_spectral_3d(number_of_clusters, data, marker_size = 0.5):
+    nbr_clusters = number_of_clusters
+    model = SpectralClustering(
+        n_clusters=nbr_clusters,
+        assign_labels="discretize",
+        random_state=0,
+        affinity="nearest_neighbors",
+        n_neighbors=10,
+    )
+    model.fit(data.astype("double"))
+    # Increase the number of components for PCA to 3 for 3D visualization
+    pc = PCA(n_components=3).fit_transform(data)
+    label = model.fit_predict(data.astype("double"))
+
+    # Create a DataFrame with the 3D coordinates and the labels
+    df_pc = pd.DataFrame(zip(pc[:, 0], pc[:, 1], pc[:, 2], label), columns=['x', 'y', 'z', 'label'])
+
+    # Use Plotly Express to create a 3D scatter plot
+    fig = px.scatter_3d(df_pc, x='x', y='y', z='z', color='label')
+    fig.update_traces(marker=dict(size=marker_size))
+    fig.update_layout(width=1000, height=800)
+    fig.show()
+
+
+def plot_clusters_on_pc_kmeans_3d(number_of_clusters, data, marker_size = 0.5):
+    nbr_clusters = number_of_clusters
+    kmeans = KMeans(init="k-means++", n_clusters=nbr_clusters, n_init=4)
+    kmeans.fit(data.astype("double"))
+    # Adjust the number of PCA components to 3 for 3D visualization
+    pc = PCA(n_components=3).fit_transform(data)
+    label = kmeans.fit_predict(data.astype("double"))
+
+    # Create a DataFrame with the 3D coordinates and the labels
+    df_pc = pd.DataFrame(zip(pc[:, 0], pc[:, 1], pc[:, 2], label), columns=['x', 'y', 'z', 'label'])
+
+    # Use Plotly Express to create a 3D scatter plot
+    fig = px.scatter_3d(df_pc, x='x', y='y', z='z', color='label')
+    fig.update_traces(marker=dict(size=marker_size))
+    fig.update_layout(width=1000, height=800)
+    fig.show()
 
 def visualize_main_words_in_clusters_TFIDF(number_of_clusters, data, df_t):
     nbr_clusters = number_of_clusters
@@ -122,7 +162,21 @@ def visualize_main_words_in_clusters_TFIDF(number_of_clusters, data, df_t):
 
     df_group["description_cluster"] = np.select(conditions, values)
 
-    colors = ["pinkyl", "tempo", "magenta", "amp", "blues"]
+    colors = ['aggrnyl', 'agsunset', 'algae', 'amp', 'armyrose', 'balance',
+             'blackbody', 'bluered', 'blues', 'blugrn', 'bluyl', 'brbg',
+             'brwnyl', 'bugn', 'bupu', 'burg', 'burgyl', 'cividis', 'curl',
+             'darkmint', 'deep', 'delta', 'dense', 'earth', 'edge', 'electric',
+             'emrld', 'fall', 'geyser', 'gnbu', 'gray', 'greens', 'greys',
+             'haline', 'hot', 'hsv', 'ice', 'icefire', 'inferno', 'jet',
+             'magenta', 'magma', 'matter', 'mint', 'mrybm', 'mygbm', 'oranges',
+             'orrd', 'oryel', 'oxy', 'peach', 'phase', 'picnic', 'pinkyl',
+             'piyg', 'plasma', 'plotly3', 'portland', 'prgn', 'pubu', 'pubugn',
+             'puor', 'purd', 'purp', 'purples', 'purpor', 'rainbow', 'rdbu',
+             'rdgy', 'rdpu', 'rdylbu', 'rdylgn', 'redor', 'reds', 'solar',
+             'spectral', 'speed', 'sunset', 'sunsetdark', 'teal', 'tealgrn',
+             'tealrose', 'tempo', 'temps', 'thermal', 'tropic', 'turbid',
+             'turbo', 'twilight', 'viridis', 'ylgn', 'ylgnbu', 'ylorbr',
+             'ylorrd']
 
     vectorizer = TfidfVectorizer(ngram_range=(2, 2))
     tfidf_matrix = vectorizer.fit_transform(df_group["text"])
@@ -149,7 +203,7 @@ def visualize_main_words_in_clusters_TFIDF(number_of_clusters, data, df_t):
             color_continuous_scale=colors[n],
         )
 
-        fig.update_layout(autosize=False, width=700, height=700)
+        fig.update_layout(autosize=False, width=1000, height=500)
 
         return fig
 
