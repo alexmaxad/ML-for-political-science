@@ -8,82 +8,93 @@ from Axes.projection_functions import *
 from Axes.axes_definition import *
 from Axes.models import *
 
-## **DataFrames**
+# DataFrames Preparation and Processing
 
 dfs = []
+# Loop through a specified range to load and project sentence embeddings for each year
 for i in range(14):
     dfs.append(
         open_to_project(
-            "/Users/alexandrequeant/Desktop/Travail TSE/data/sentence_embeddings/sentence_embeddings_201" + str(i) + ".csv",
-            eval("201" + str(i)),
+            f"/Users/alexandrequeant/Desktop/Travail TSE/data/sentence_embeddings/sentence_embeddings_201{i}.csv",
+            eval(f"201{i}"),
         )
     )
 
-### On retire les journaux comportant moins de 50 articles dans une année
+# Remove sources with fewer than 50 articles per year for cleaner analysis
+# Specifically targets "DM" and "TE" sources in various years
+sources_to_remove = ["DM", "TE"]
+for i, df in enumerate(dfs[:6]):
+    for source in sources_to_remove:
+        dfs[i] = dfs[i][~dfs[i]["source"].isin([source] if i == 0 else ["TE"])]
 
-dfs[0] = dfs[0][dfs[0]["source"] != "DM"]
-dfs[0] = dfs[0][dfs[0]["source"] != "TE"]
-dfs[1] = dfs[1][dfs[1]["source"] != "TE"]
-dfs[2] = dfs[2][dfs[2]["source"] != "TE"]
-dfs[3] = dfs[3][dfs[3]["source"] != "TE"]
-dfs[4] = dfs[4][dfs[4]["source"] != "TE"]
-dfs[5] = dfs[5][dfs[5]["source"] != "TE"]
-
-# PART II **Projections** $\rightarrow$ *[DONNÉES À ENTRER]*
-
-## Projections par année
-
+# Projections by Year
 
 def both_cosines(df, pos_1, neg_1, pos_2, neg_2, model_words, model_sentences):
+    """
+    Computes cosine similarities for two axes and updates the dataframe with these values.
+
+    Parameters:
+    - df (DataFrame): The dataframe containing sentence embeddings.
+    - pos_1, neg_1, pos_2, neg_2 (str): Positive and negative words defining two axes.
+    - model_words, model_sentences (Model): Pre-trained word and sentence models.
+
+    Returns:
+    - DataFrame: Updated dataframe with added columns for cosine similarity on both axes.
+    """
     axis_v1 = axis_vector(pos_1, neg_1, model_words)
     df["cos axe 1"] = df["text"].apply(
         cosine_with_axis,
-        axis_v1,
+        args=(axis_v1,),
         model_sentences=model_sentences,
     )
     axis_v2 = axis_vector(pos_2, neg_2, model_words)
     df["cos axe 2"] = df["text"].apply(
         cosine_with_axis,
-        axis_v2,
+        args=(axis_v2,),
         model_sentences=model_sentences,
     )
     return df
 
-
+# Apply the cosine similarity calculations for all prepared DataFrames
 for i in range(14):
     dfs[i] = both_cosines(dfs[i], pos_1, neg_1, pos_2, neg_2, models_w[i], models_s[i])
 
-df = pd.concat([dfs[i] for i in range(len(dfs))])
+# Combine all DataFrames into one for further analysis
+df = pd.concat(dfs)
 
-# PART III **BigTech dataframes**
-
+# BigTech DataFrames Creation
 
 def tostring(list):
+    """
+    Converts a list to a string representation.
+
+    Parameters:
+    - list (List): The list to be converted.
+
+    Returns:
+    - str: A string representation of the input list.
+    """
     return str(list)
 
-
+# Copying the main DataFrame to isolate Big Tech related entries
 df_BT = df.copy()
 df_BT.reset_index(drop=True, inplace=True)
+# Applying thematic analysis and conversion to string for keyword matching
 df_BT["theme"] = df_BT["keywords"].apply(theme)
 df_BT["theme"] = df_BT["theme"].apply(tostring)
 
-df_BT_amazon = df_BT[df_BT["theme"].str.contains("amazon")]
-df_BT_facebook = df_BT[df_BT["theme"].str.contains("facebook")]
-df_BT_apple = df_BT[df_BT["theme"].str.contains("apple")]
-df_BT_google = df_BT[df_BT["theme"].str.contains("google")]
-df_BT_microsoft = df_BT[df_BT["theme"].str.contains("microsoft")]
+# Filtering entries by Big Tech companies based on theme presence
+big_tech_companies = ["amazon", "facebook", "apple", "google", "microsoft"]
+dfs_big_tech = {company: df_BT[df_BT["theme"].str.contains(company)] for company in big_tech_companies}
 
-df_BT_amazon["class"] = "am"
-df_BT_facebook["class"] = "fb"
-df_BT_apple["class"] = "ap"
-df_BT_google["class"] = "go"
-df_BT_microsoft["class"] = "mi"
+# Assigning a unique class identifier for each Big Tech company
+class_map = {"amazon": "am", "facebook": "fb", "apple": "ap", "google": "go", "microsoft": "mi"}
+for company, df in dfs_big_tech.items():
+    df["class"] = class_map[company]
 
-df_BT = pd.concat(
-    [df_BT_amazon, df_BT_facebook, df_BT_apple, df_BT_google, df_BT_microsoft]
-)
+# Combining all Big Tech DataFrames into one
+df_BT = pd.concat(dfs_big_tech.values())
 
-# Saving dataframes
-
-df.to_csv("data/current_dataframes/df", index=False)
-df_BT.to_csv("data/current_dataframes/df_BT", index=False)
+# Saving the processed DataFrames for future use
+df.to_csv("data/current_dataframes/df.csv", index=False)
+df_BT.to_csv("data/current_dataframes/df_BT.csv", index=False)

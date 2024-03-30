@@ -148,7 +148,7 @@ def txt_to_model_sentences(fichier: str):
     -----------
     fichier : the txt file of sentence embeddings
     """
-    #glove_file_sentences = datapath(fichier)
+    # glove_file_sentences = datapath(fichier)
     word2vec_glove_file_sentences = get_tmpfile("format_word2vec.text")
     glove2word2vec(fichier, word2vec_glove_file_sentences)
     with open(word2vec_glove_file_sentences, "r") as file:
@@ -166,7 +166,7 @@ def txt_to_model_words(fichier: str):
     -----------
     fichier : the txt file of word embeddings
     """
-    #glove_file_sentences = datapath(fichier)
+    # glove_file_sentences = datapath(fichier)
     word2vec_glove_file_sentences = get_tmpfile("format_word2vec.text")
     glove2word2vec(fichier, word2vec_glove_file_sentences)
     return KeyedVectors.load_word2vec_format(word2vec_glove_file_sentences)
@@ -414,14 +414,15 @@ def projection_3D(
 
     return (Wp, df)
 
-def axis_vector(pos_1, neg_1, model_words):
 
+def axis_vector(pos_1, neg_1, model_words):
     pos_a = filter_model(pos_1, model_words)
     neg_a = filter_model(neg_1, model_words)
 
     b1 = barycentre(pos_a, model_words) - barycentre(neg_a, model_words)
 
     return b1
+
 
 def cosine_with_axis(sentence: str, axis_v, model_sentences):
     """computes the cosine of a sentence with the given axis
