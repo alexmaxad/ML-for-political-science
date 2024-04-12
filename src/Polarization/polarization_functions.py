@@ -139,7 +139,7 @@ def calculate_polarization(dem_counts, rep_counts, measure="posterior", leaveout
 
 
 def get_values(df, year, party_1, party_2, token_partisanship_measure='posterior', leaveout=True,
-               default_score = 0.5):
+               default_score = 0.5, with_parliament = True):
     """
     Measure polarization.
     :param event: name of the event
@@ -153,8 +153,12 @@ def get_values(df, year, party_1, party_2, token_partisanship_measure='posterior
 
     dem_tweets, rep_tweets = df[df['party'] == party_1], df[df['party'] == party_2]  # get partisan tweets
 
-    with open('data/vocabs/vocab_'+str(year)+'.json') as f:
-        vocab = json.load(f)
+    if with_parliament:
+        with open('data/with parliament/vocabs/vocab_'+str(year)+'.json') as f:
+            vocab = json.load(f)
+    if not with_parliament:
+        with open('data/without parliament/vocabs/vocab_'+str(year)+'_WP.json') as f:
+            vocab = json.load(f)
 
     # get vocab
     vocab = {w: i for i, w in

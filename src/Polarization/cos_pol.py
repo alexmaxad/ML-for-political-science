@@ -5,7 +5,7 @@ import os
 print(os.getcwd())
 
 def draw_cos_pol(left_side, right_side, curves_by_company=None, axis=None,
-    percentiles=[10, 90], print_random_pol=True, force_i_lim=None):
+    percentiles=[10, 90], print_random_pol=True, force_i_lim=None, with_parliament=True):
 
     if curves_by_company:
         raise ValueError("Not implemented with company curves yet")
@@ -17,22 +17,26 @@ def draw_cos_pol(left_side, right_side, curves_by_company=None, axis=None,
 
     sources = left_side + right_side
 
-    if os.path.exists(f"plots/Polarization/Polarization and cosine between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}.png"):
-        img = mpimg.imread(f'plots/Polarization/Polarization and cosine between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}.png')
+    if os.path.exists(f"plots/Polarization/Polarization and cosine between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}, with parliament = {with_parliament}.png"):
+        img = mpimg.imread(f'plots/Polarization/Polarization and cosine between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}, with parliament = {with_parliament}.png')
         plt.figure(figsize=(12, 8))
         plt.imshow(img)
         plt.axis('off')
         plt.show()
 
     else :
-        if not os.path.exists(f"notebooks/polarization/polarization values/Polarization between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}.csv"):
+        if not os.path.exists(f"notebooks/polarization/polarization values/Polarization between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}, with parliament = {with_parliament}.csv"):
             print('computin polarization')
-            choose_pol(left_side=left_side, right_side=right_side, curves_by_company=None, axis=axis, percentiles=percentiles, print_random_pol=print_random_pol, force_i_lim=force_i_lim)
+            choose_pol(left_side=left_side, right_side=right_side, curves_by_company=None, axis=axis, percentiles=percentiles, print_random_pol=print_random_pol, force_i_lim=force_i_lim, with_parliament=with_parliament)
 
         else:
             print('polarization already computed')
 
-        df_proj = pd.read_csv("data/current_dataframes/df")
+        if with_parliament:
+            df_proj = pd.read_csv("data/with parliament/current_dataframes/df.csv")
+        if not with_parliament:
+            df_proj = pd.read_csv("data/without parliament/current_dataframes/df.csv")
+            df_proj['party'], df_proj['Speaker'] = 0, 0
 
         df_par = df_proj.loc[df_proj["source"].isin(sources) | df_proj["party"].isin(sources)]
 
@@ -87,7 +91,7 @@ def draw_cos_pol(left_side, right_side, curves_by_company=None, axis=None,
         df_par_grouped["cos axe"] = df_par_grouped[f"cos axe {axis}"]
 
         df_pol = pd.read_csv(
-        f"notebooks/polarization/polarization values/Polarization between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}.csv"
+        f"notebooks/polarization/polarization values/Polarization between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}, with parliament = {with_parliament}.csv"
         )
 
         real_pol = np.array(df_pol["real_pol"])
@@ -161,8 +165,8 @@ def draw_cos_pol(left_side, right_side, curves_by_company=None, axis=None,
         for year in x:
             ax1.axvline(year, color="gray", linestyle="--", alpha=0.5)
 
-        plt.title(f"Polarization and cosine between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}")
+        plt.title(f"Polarization and cosine between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}, with parliament = {with_parliament}")
         plt.grid(True, linestyle="--", alpha=0.5, axis="x")  # Adding both x and y gridlines
         plt.tight_layout()
-        plt.savefig(f"plots/Polarization/Polarization and cosine between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}.png")
+        plt.savefig(f"plots/Polarization/Polarization and cosine between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}, with parliament = {with_parliament}.png")
         plt.show()

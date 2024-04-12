@@ -17,8 +17,8 @@ def format_year(integer):
     Returns:
     - int: A four-digit year integer.
     """
-    if len(str(integer)) > 4:
-        return int(str(integer)[:-2] + str(integer)[-1:])
+    if integer > 20109:
+        return integer-18090
     else:
         return integer
 
@@ -83,6 +83,7 @@ def choose_projection_cos(
     sources=["par", "GUA", "TE", "DM", "DE", "MET"],
     focus_on_companies=None,
     curves_by_company=None,
+    with_parliament=True,
 ):
     """
     Chooses the projection of cosine similarity to plot, validates inputs,
@@ -98,8 +99,14 @@ def choose_projection_cos(
     - ValueError: If an invalid source or company is provided.
     """
     # Data loading
-    df = pd.read_csv("data/current_dataframes/df")
-    df_BT = pd.read_csv("data/current_dataframes/df_BT")
+    
+    if with_parliament:
+        df = pd.read_csv("data/with parliament/current_dataframes/df.csv")
+        df_BT = pd.read_csv("data/with parliament/current_dataframes/df_BT.csv")
+    
+    if not with_parliament:
+        df = pd.read_csv("data/without parliament/current_dataframes/df.csv")
+        df_BT = pd.read_csv("data/without parliament/current_dataframes/df_BT.csv")
 
     # Validate the sources parameter
     if sources is not None:
@@ -143,6 +150,7 @@ def choose_projection_cos(
         df_all_grouped = df_all_grouped[df_all_grouped["year"] < 2020]  # Filter by year
     else:
         df_all_grouped["year"] = df_all_grouped["year"].apply(format_year)  # Format years
+        df["year"] = df["year"].apply(format_year)
 
     # Grouping and averaging the data
     df_all_grouped = df_all_grouped.groupby(["source", "year"]).mean().reset_index()

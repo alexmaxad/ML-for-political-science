@@ -1,4 +1,4 @@
-
+import os
 import pandas as pd
 from GloVe.weights import *
 import warnings
@@ -8,6 +8,9 @@ from Axes.projection_functions import *
 from Axes.axes_definition import *
 from Axes.models import *
 
+os.chdir("../")
+print(os.getcwd())
+
 # DataFrames Preparation and Processing
 
 dfs = []
@@ -15,7 +18,7 @@ dfs = []
 for i in range(14):
     dfs.append(
         open_to_project(
-            f"/Users/alexandrequeant/Desktop/Travail TSE/data/sentence_embeddings/sentence_embeddings_201{i}.csv",
+            f"data/without parliament/sentence_embeddings/sentence_embeddings_201{i}.csv",
             eval(f"201{i}"),
         )
     )
@@ -79,6 +82,7 @@ def tostring(list):
 # Copying the main DataFrame to isolate Big Tech related entries
 df_BT = df.copy()
 df_BT.reset_index(drop=True, inplace=True)
+df_BT["keywords"] = df_BT["keywords"].apply(eval)
 # Applying thematic analysis and conversion to string for keyword matching
 df_BT["theme"] = df_BT["keywords"].apply(theme)
 df_BT["theme"] = df_BT["theme"].apply(tostring)
@@ -89,12 +93,12 @@ dfs_big_tech = {company: df_BT[df_BT["theme"].str.contains(company)] for company
 
 # Assigning a unique class identifier for each Big Tech company
 class_map = {"amazon": "am", "facebook": "fb", "apple": "ap", "google": "go", "microsoft": "mi"}
-for company, df in dfs_big_tech.items():
-    df["class"] = class_map[company]
+for company, dfi in dfs_big_tech.items():
+    dfi["class"] = class_map[company]
 
 # Combining all Big Tech DataFrames into one
 df_BT = pd.concat(dfs_big_tech.values())
 
 # Saving the processed DataFrames for future use
-df.to_csv("data/current_dataframes/df.csv", index=False)
-df_BT.to_csv("data/current_dataframes/df_BT.csv", index=False)
+df.to_csv("data/without parliament/current_dataframes/df.csv", index=False)
+df_BT.to_csv("data/without parliament/current_dataframes/df_BT.csv", index=False)

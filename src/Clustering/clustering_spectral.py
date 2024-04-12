@@ -202,8 +202,6 @@ def visualize_main_words_in_clusters_TFIDF(number_of_clusters, data, df_t):
         )
     )
 
-    joblib.dump(model, "doc_cluster.pkl")
-
     # df_pc[3] = df_pc[3].apply(word_tokenize)
     df_pc = df_pc.rename(columns={2: "cluster", 3: "text", 0: "pc1", 1: "pc2"})
 

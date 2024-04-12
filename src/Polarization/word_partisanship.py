@@ -74,10 +74,14 @@ def get_log_odds_values(df_speeches, words2idx, party_1, party_2):
 def from_unigrams_to_bigrams(list_of_strings):
     return [list_of_strings[i]+' '+list_of_strings[i+1] for i in range(len(list_of_strings)-1)]
 
-def get_word_partisanship(df_speeches, year, party_1, party_2, bigram=False):
+def get_word_partisanship(df_speeches, year, party_1, party_2, bigram=False, with_parliament=True):
 
-    with open('data/vocabs/vocab_'+str(year)+'.json') as f:
-        vocab = json.load(f)
+    if with_parliament:
+        with open('data/with parliament/vocabs/vocab_'+str(year)+'.json') as f:
+            vocab = json.load(f)
+    if not with_parliament:
+        with open('data/without parliament/vocabs/vocab_'+str(year)+'_WP.json') as f:
+            vocab = json.load(f)
 
     if bigram :
         df_speeches['text'] = df_speeches['text'].apply(from_unigrams_to_bigrams)
@@ -179,7 +183,7 @@ def get_quantiles(data, percentiles):
     return np.percentile(data, percentiles)
 
 def partizan_words(left_side, right_side, year, gram = 'bigram', focus_on_companies=None, axis=None,
-    percentiles_cos=[10, 90], percentiles_delta=[10, 90], force_i_lim=None, re_filter_cos=False, percentiles_refiltering_cos = [25, 75]):
+    percentiles_cos=[10, 90], percentiles_delta=[10, 90], force_i_lim=None, re_filter_cos=False, percentiles_refiltering_cos = [25, 75], with_parliament=True):
 
     sources = left_side+right_side
 
@@ -190,7 +194,11 @@ def partizan_words(left_side, right_side, year, gram = 'bigram', focus_on_compan
     if s[0] == '2':
         i = eval('1'+s[1])
     
-    df_proj = pd.read_csv("data/current_dataframes/df_BT")
+    if with_parliament:
+        df_proj = pd.read_csv("data/with parliament/current_dataframes/df_BT.csv")
+    if not with_parliament:
+        df_proj = pd.read_csv("data/without parliament/current_dataframes/df_BT.csv")
+        df_proj["party"], df_proj['Speaker'] = 0,0
 
     df_par = df_proj.loc[df_proj["source"].isin(sources) | df_proj["party"].isin(sources)]
     
@@ -246,7 +254,7 @@ def partizan_words(left_side, right_side, year, gram = 'bigram', focus_on_compan
     df_par['text'] = df_par['text'].apply(phrase_to_tokens)
 
     if gram == 'bigram' :
-        partisanship_matrix, idx2words, words2idx = get_word_partisanship(df_par, year, 'Lab', 'Con', bigram=True)
+        partisanship_matrix, idx2words, words2idx = get_word_partisanship(df_par, year, 'Lab', 'Con', bigram=True, with_parliament=with_parliament)
         deltas = partisanship_matrix[3, :]
         words = np.array(list(idx2words.values()), dtype=None)
         df_sorted_partisanships = pd.DataFrame({'words' : words, 'deltas' : deltas}).sort_values(by='deltas', ascending=False)
@@ -263,7 +271,7 @@ def partizan_words(left_side, right_side, year, gram = 'bigram', focus_on_compan
         df = filter_deltas(df, percentiles_delta[0], percentiles_delta[1])
 
     if gram == 'unigram' :
-        partisanship_matrix, idx2words, words2idx = get_word_partisanship(df_par, year, 'Lab', 'Con', bigram=False)
+        partisanship_matrix, idx2words, words2idx = get_word_partisanship(df_par, year, 'Lab', 'Con', bigram=False, with_parliament=with_parliament)
         deltas = partisanship_matrix[3, :]
         words = np.array(list(idx2words.values()), dtype=None)
         df_sorted_partisanships = pd.DataFrame({'words' : words, 'deltas' : deltas}).sort_values(by='deltas', ascending=False)

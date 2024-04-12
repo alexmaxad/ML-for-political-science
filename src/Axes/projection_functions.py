@@ -7,6 +7,7 @@ import ast
 from numpy.linalg import norm
 from GloVe.weights import *
 import warnings
+import os
 
 warnings.filterwarnings("ignore")
 

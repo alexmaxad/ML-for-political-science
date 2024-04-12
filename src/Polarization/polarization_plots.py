@@ -39,7 +39,7 @@ def get_quantiles(data, percentiles):
 
 def choose_pol(
     left_side, right_side, curves_by_company=None, axis=None,
-    percentiles=[10, 90], print_random_pol=True, force_i_lim=None):
+    percentiles=[10, 90], print_random_pol=True, force_i_lim=None, with_parliament=True):
     """
     Analyzes and visualizes polarization based on political alignment, optionally segmented by company and axis.
     
@@ -78,9 +78,9 @@ def choose_pol(
     else:
         companies = ["all"]
 
-    if os.path.exists(f"plots/Polarization/Polarization between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}.png"):
+    if os.path.exists(f"plots/Polarization/Polarization between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}, with parliament = {with_parliament}.png"):
         print('graph aldready exists')
-        img = mpimg.imread(f'plots/Polarization/Polarization between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}.png')
+        img = mpimg.imread(f'plots/Polarization/Polarization between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}, with parliament = {with_parliament}.png')
         plt.figure(figsize=(12, 8))
         plt.imshow(img)
         plt.axis('off')
@@ -90,7 +90,10 @@ def choose_pol(
         # Load projection data if an axis is specified
         if axis:
             print(os.getcwd())
-            df_proj = pd.read_csv("data/current_dataframes/df")
+            if with_parliament:
+                df_proj = pd.read_csv("data/with parliament/current_dataframes/df.csv")
+            if not with_parliament:
+                df_proj = pd.read_csv("data/without parliament/current_dataframes/df.csv")
 
         # Main loop over each company (or all companies together)
         for company in companies:
@@ -104,8 +107,13 @@ def choose_pol(
                 year = eval("201" + str(i))  # Dynamically generate year
 
                 # Load data for the current year, with preprocessing
-                df = standard_opening(
-                    f"data/FinalDataframes/FilteredFinalDataFrame_201{i}.csv", True).reset_index()
+                if with_parliament:
+                    df = standard_opening(
+                        f"data/with parliament/FinalDataframes/FilteredFinalDataFrame_201{i}.csv", True).reset_index()
+                if not with_parliament:
+                    df = standard_opening(
+                        f"data/without parliament/FinalDataframes/FilteredFinalDataFrame_201{i}_WP.csv", True).reset_index()
+                    df['party'], df['Speaker'] = 0, 0
 
                 # Project data onto specified axis if applicable
                 if axis:
@@ -198,7 +206,7 @@ def choose_pol(
             # Convert the company's metrics into a DataFrame and save to CSV
             df_pol_BT[company] = pd.DataFrame(values_by_company[company])
             df_pol_BT[company].to_csv(
-                f"notebooks/polarization/polarization values/Polarization between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}.csv", index=False)
+                f"notebooks/polarization/polarization values/Polarization between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}, with parliament = {with_parliament}.csv", index=False)
 
             # Extract polarization metrics for plotting
             real_pol = np.array(values_by_company[company]['real_pol'])
@@ -219,11 +227,11 @@ def choose_pol(
                 plt.fill_between(x, CI_lows_random, CI_high_random, color='orange', alpha=0.1)
 
         # Customize the plot with titles, labels, and grid
-        plt.title(f"Polarization between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}")
+        plt.title(f"Polarization between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}, with parliament = {with_parliament}")
         plt.xlabel("Year")
         plt.ylabel("Polarization")
         plt.legend()
         plt.grid(True, linestyle="--", alpha=0.5)
         plt.tight_layout()
-        plt.savefig(f"plots/Polarization/Polarization between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}.png")
+        plt.savefig(f"plots/Polarization/Polarization between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}, with parliament = {with_parliament}.png")
         plt.show()  # Display the plot
