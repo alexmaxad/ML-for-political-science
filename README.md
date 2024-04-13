@@ -26,7 +26,7 @@ This section provides a detailed overview of the project's directory and file st
 ### `src/`
 
 - The source code for the core functionality of the project.
-  - [`src/Processing/`](src/Processing/): Tracks recent modifications, useful for debugging or development tracking.
+  - [`src/Processing/`](src/Processing/): All the functions linked use to filter texts on the theme of BigTechs, and text cleaning functions. The ```clean()``` 
 
 ### `processing/`
 
