@@ -26,7 +26,12 @@ This section provides a detailed overview of the project's directory and file st
 ### `src/`
 
 - The source code for the core functionality of the project.
-  - [`src/Processing/`](src/Processing/): All the functions linked use to filter texts on the theme of BigTechs, and text cleaning functions. The ```clean()``` 
+  
+  - [`src/Processing/`](src/Processing/): All the functions linked use to filter texts on the theme of BigTechs, and text cleaning functions. The `clean()` function is called many times in the project in order to clean uniformally newcoming texts.
+
+  - [`src/GloVe/`](src/GloVe/): 
+    - [`glove_functs.py`](src/GloVe/glove_functs.py) contains the main functions to perform the computation of the cooccurrence matric then the training of the GloVe model.
+    - [`weights.py`](src/GloVe/weights.py) contains the functions to compute the weighting of embeddings inside a document in order to get the document general embedding.
 
 ### `processing/`
 
