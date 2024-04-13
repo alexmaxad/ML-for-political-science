@@ -33,6 +33,11 @@ This section provides a detailed overview of the project's directory and file st
     - [`glove_functs.py`](src/GloVe/glove_functs.py) contains the main functions to perform the computation of the cooccurrence matric then the training of the GloVe model.
     - [`weights.py`](src/GloVe/weights.py) contains the functions to compute the weighting of embeddings inside a document in order to get the document general embedding.
 
+  - [`src/Axes/`](src/Axes/): This folder builds all the functions relative to the definition of the axes we want to look at and the projection of embeddings on them.
+    - [`axes_definition.py`](src/Axes/axes_definition.py) : Here you can find and modify the list of words defining the poles of the axes.
+    - [`models.py`](src/Axes/models.py): This script loads the embeddings from text format into word2vec format, which is much more manipulable.
+    - [`models_dataframes.py`](src/Axes/models_dataframes.py): This scripts takes the word2vec embeddings format and computes the cosine of each document with the 2 axes defined. It also filters the texts speaking of specific companies thanks to the filtering words defined in [`filter_words.py`](src/Axes/filter_words.py). Then, it stores two dataframes in the `data` folder : a dataframe with all the texts and their cosines with the axes, and a similar one but with information relative to the company of which each text speaks of. 
+
 ### `processing/`
 
 - Scripts and modules responsible for data processing and manipulation.
