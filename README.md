@@ -58,20 +58,20 @@ This folder contains the three notebooks that we use to clean and filter our cor
 
 This folder is where we can visualize all our results and do our manipulations. 
 
-- [`glove%20model/`](notebooks/glove%20model/):
+- [`glove model/`](notebooks/glove%20model/):
   - [`__main__.ipynb`](notebooks/glove%20model/__main__.ipynb): The notebook is where we can launch the computation of the cooccurence matrix, the training of the GloVe model and the formation of document embeddings. 
 
-- [`define%20axes/`](notebooks/define%20axes/):
+- [`define axes/`](notebooks/define%20axes/):
   - [`axes_definition.ipynb`](notebooks/define%20axes/axes_definition.ipynb): This notebook launches the definition of axes, the computation of cosines between the corpus and the axes and the filtering with respect to the BigTechs. 
 
-- [`cosine%20similarity%20curves/`](notebooks/cosine%20similarity%20curves/):
+- [`cosine similarity curves/`](notebooks/cosine%20similarity%20curves/):
   - [`curves.ipynb`](notebooks/cosine%20similarity%20curves/curves.ipynb): The main notebook where we can visualize the evolution of cosine similarity between a corpus and an axis, given multiple variables. 
 
 - [`polarization/`](notebooks/polarization/):
   - [`curves.ipynb`](notebooks/polarization/curves.ipynb): The main notebook to visualize the evolution of the polarization between two sources, given multiple variables, and also compared to the evolution of the cosine similarity on an axis during the same period. 
   - [`polarized_words.ipyn`](notebooks/polarization/polarized_words.ipynb): The notebook to vizualize the most partisan words every year. 
 
-- [`word%20analysis/`](notebooks/word%20analysis/): Here you can perform all the linguistic analysis built in [`src/Word_analysis/`](src/Word_analysis/) in order to explain the variation on the preceeding curves. 
+- [`word analysis/`](notebooks/word%20analysis/): Here you can perform all the linguistic analysis built in [`src/Word_analysis/`](src/Word_analysis/) in order to explain the variation on the preceeding curves. 
 
 ### `plots/`
 
