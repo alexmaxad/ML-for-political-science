@@ -207,7 +207,7 @@ def choose_pol(
             # Convert the company's metrics into a DataFrame and save to CSV
             df_pol_BT[company] = pd.DataFrame(values_by_company[company])
             df_pol_BT[company].to_csv(
-                f"notebooks/polarization/polarization values/Polarization between {left_side} VS {right_side} ; axis = {axis}, companies = {companies}, percentiles = {percentiles}, with parliament = {with_parliament}.csv", index=False)
+                f"notebooks/polarization/polarization values/Polarization between {left_side} VS {right_side} ; axis = {axis}, companies = {company}, percentiles = {percentiles}, with parliament = {with_parliament}.csv", index=False)
 
             # Extract polarization metrics for plotting
             real_pol = np.array(values_by_company[company]['real_pol'])
