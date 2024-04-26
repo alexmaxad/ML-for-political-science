@@ -13,7 +13,7 @@ def draw_cos_pol(left_side, right_side, curves_by_company=None, axis=None,
     if not axis:
         raise ValueError("It only works on an axis")
     
-    companies = ["all"]
+    companies = "all"
 
     sources = left_side + right_side
 
